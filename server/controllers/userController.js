@@ -1,39 +1,83 @@
-const users = require('../mockData');
+const User = require('../models/userModel');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+require('dotenv').config();
+
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: '30d',
+  });
+};
+
+const getUsers = async (req, res) => {
+  try {
+    const users = await User.find().select('-password');
+    res.json(users);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
 
 
-const getUsers = (req, res) => {
-    try {
-        res.status(200).json(users);
+const signup = async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: 'User already exists' });
     }
-    catch (error) {
-        res.status(500).send(error.message);
-    }
-}
 
-const addUser = (req, res) => {
-    try {
-        const user = req.body;
-        users.push(user);
-        res.status(201).json({message: "user created succesfully", user});
-    }
-    catch (error) {
-        res.status(500).send(error.message);
-    }
-}
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    
+    const user = await User.create({
+      name,
+      email,
+      password,
+      role,
+    });
 
-const updateUser = (req, res) => {
-    try {
-        const { email } = req.params;
-        const user = req.body;
-        const userIndex = users.findIndex(user => user.email === email);
-        users[userIndex] = { ...users[userIndex], ...user };
-        res.status(200).json({ message: "user updated successfully", user: users[userIndex] });
+    if (user) {
+      res.status(201).json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        token: generateToken(user._id),
+      });
     }
-    catch (error) {
-        res.status(500).send(error.message);
-    }
-}
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
 
 
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-module.exports = { getUsers, addUser, updateUser };
+    const user = await User.findOne({ email });
+
+
+    if (user && (await bcrypt.compare(password, user.password))) {
+      res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        token: generateToken(user._id),
+      });
+    } else {
+      res.status(401).json({ message: 'Invalid email or password' });
+    }
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  signup,
+  login,
+  getUsers
+};
