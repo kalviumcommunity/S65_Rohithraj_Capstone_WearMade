@@ -14,7 +14,7 @@ const getUsers = async (req, res) => {
     const users = await User.find().select('-password');
     res.json(users);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -48,7 +48,7 @@ const signup = async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -72,7 +72,7 @@ const login = async (req, res) => {
       res.status(401).json({ message: 'Invalid email or password' });
     }
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
