@@ -25,7 +25,7 @@ const signup = async (req, res) => {
 
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ message: 'Acocunt with the email already exists' });
+      return res.status(400).json({ message: 'Account with the email already exists' });
     }
 
     const salt = await bcrypt.genSalt(10);
