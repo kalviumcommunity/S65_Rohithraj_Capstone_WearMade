@@ -21,18 +21,19 @@ const getUsers = async (req, res) => {
 
 const signup = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, username, email, password, role } = req.body;
 
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ $or: [{ email }, { username }] });
     if (userExists) {
-      return res.status(400).json({ message: 'Account with the email already exists' });
+      return res.status(400).json({ message: 'Account with the email or username already exists' });
     }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    
+
     const user = await User.create({
       name,
+      username,
       email,
       password: hashedPassword,
       role,
@@ -40,10 +41,7 @@ const signup = async (req, res) => {
 
     if (user) {
       res.status(201).json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
+        message: 'Account created successfully',
         token: generateToken(user._id),
       });
     }
@@ -52,24 +50,21 @@ const signup = async (req, res) => {
   }
 };
 
-
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { usernameOrEmail, password } = req.body;
 
-    const user = await User.findOne({ email });
-
+    const user = await User.findOne({
+      $or: [{ email: usernameOrEmail }, { username: usernameOrEmail }],
+    });
 
     if (user && (await bcrypt.compare(password, user.password))) {
-      res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
+      res.status(200).json({
+        message: 'Login successful',
         token: generateToken(user._id),
       });
     } else {
-      res.status(401).json({ message: 'Invalid email or password' });
+      res.status(401).json({ message: 'Invalid username/email or password' });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
