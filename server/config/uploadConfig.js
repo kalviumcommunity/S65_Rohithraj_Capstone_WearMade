@@ -12,7 +12,7 @@ cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true // Enforce HTTPS
+  secure: true 
 });
 
 const storage = new CloudinaryStorage({
@@ -33,17 +33,17 @@ const storage = new CloudinaryStorage({
 const upload = multer({
   storage: storage,
   limits: { 
-    fileSize: 2 * 1024 * 1024 // 2MB limit
+    fileSize: 2 * 1024 * 1024 
   },
   fileFilter: (req, file, cb) => {
     if (!file) {
-      return cb(new Error('No file provided'), false); // Reject requests with no file
+      return cb(new Error('No file provided'), false); 
     }
     const allowedMimes = ['image/jpeg', 'image/jpg', 'image/png'];
     if (allowedMimes.includes(file.mimetype)) {
-      cb(null, true); // Accept valid image files
+      cb(null, true); 
     } else {
-      cb(new Error('Only JPG, JPEG, and PNG images are allowed'), false); // Reject invalid file types
+      cb(new Error('Only JPG, JPEG, and PNG images are allowed'), false); 
     }
   }
 });
