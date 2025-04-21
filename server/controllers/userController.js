@@ -18,10 +18,16 @@ const getUsers = async (req, res) => {
   }
 };
 
-
 const signup = async (req, res) => {
   try {
     const { name, username, email, password, role } = req.body;
+
+    if (!req.file) {
+      return res.status(400).json({ message: 'Profile picture is required' });
+    }
+
+
+    const profilePicture = req.file.path || req.file.url;
 
     const userExists = await User.findOne({ $or: [{ email }, { username }] });
     if (userExists) {
@@ -37,11 +43,20 @@ const signup = async (req, res) => {
       email,
       password: hashedPassword,
       role,
+      profilePicture,
     });
 
     if (user) {
       res.status(201).json({
         message: 'Account created successfully',
+        user: {
+          _id: user._id,
+          name: user.name,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          profilePicture: user.profilePicture,
+        },
         token: generateToken(user._id),
       });
     }
@@ -61,6 +76,14 @@ const login = async (req, res) => {
     if (user && (await bcrypt.compare(password, user.password))) {
       res.status(200).json({
         message: 'Login successful',
+        user: {
+          _id: user._id,
+          name: user.name,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          profilePicture: user.profilePicture
+        },
         token: generateToken(user._id),
       });
     } else {

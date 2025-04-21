@@ -27,7 +27,10 @@ const userSchema = new mongoose.Schema({
     enum: ['customer', 'tailor'],
     default: 'customer'
   },
-  profilePicture: String,
+  profilePicture: {
+    type: String,
+    required: true,
+  },
   bio: String,
   socialLinks: {
     facebook: String,
