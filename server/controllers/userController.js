@@ -26,7 +26,8 @@ const signup = async (req, res) => {
       return res.status(400).json({ message: 'Profile picture is required' });
     }
 
-    const profilePicture = req.file.path;
+
+    const profilePicture = req.file.path || req.file.url;
 
     const userExists = await User.findOne({ $or: [{ email }, { username }] });
     if (userExists) {

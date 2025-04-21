@@ -3,7 +3,7 @@ const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('cloudinary').v2;
 require('dotenv').config();
 
-// Validate Cloudinary configuration
+
 if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
   throw new Error('Cloudinary configuration missing in environment variables');
 }
@@ -25,8 +25,7 @@ const storage = new CloudinaryStorage({
         { width: 500, height: 500, crop: 'limit' },
         { quality: 'auto:good', fetch_format: 'auto' }
       ],
-      public_id: `${Date.now()}-${file.originalname.split('.')[0].replace(/[^a-zA-Z0-9]/g, '')}`,
-      secure: true
+      public_id: `${Date.now()}-${file.originalname.split('.')[0].replace(/[^a-zA-Z0-9]/g, '')}`
     };
   }
 });
@@ -38,13 +37,13 @@ const upload = multer({
   },
   fileFilter: (req, file, cb) => {
     if (!file) {
-      return cb(null, true); // Allow no file to pass through
+      return cb(new Error('No file provided'), false); // Reject requests with no file
     }
     const allowedMimes = ['image/jpeg', 'image/jpg', 'image/png'];
     if (allowedMimes.includes(file.mimetype)) {
-      cb(null, true);
+      cb(null, true); // Accept valid image files
     } else {
-      cb(new Error('Only JPG, JPEG, and PNG images are allowed'), false);
+      cb(new Error('Only JPG, JPEG, and PNG images are allowed'), false); // Reject invalid file types
     }
   }
 });
