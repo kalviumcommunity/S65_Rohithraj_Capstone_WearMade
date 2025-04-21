@@ -48,7 +48,27 @@ const upload = multer({
   }
 });
 
+const handleMulterError = (err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    switch (err.code) {
+      case 'LIMIT_FILE_SIZE':
+        return res.status(400).json({ message: 'File size exceeds the 2MB limit' });
+      case 'LIMIT_FILE_TYPE':
+        return res.status(400).json({ message: 'Only JPG, JPEG, and PNG images are allowed' });
+      case 'LIMIT_UNEXPECTED_FILE':
+        return res.status(400).json({ message: 'No file provided or unexpected file field' });
+      default:
+        return res.status(400).json({ message: 'File upload error', details: err.message });
+    }
+  } else if (err) {
+    // Handle other errors
+    return res.status(500).json({ message: 'An unexpected error occurred', details: err.message });
+  }
+  next();
+};
+
 module.exports = {
   upload,
-  cloudinary
+  cloudinary,
+  handleMulterError
 };
