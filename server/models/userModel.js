@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema({
   },
   profilePicture: {
     type: String,
-    required: true,
+    required: true
   },
   bio: String,
   socialLinks: {
@@ -43,10 +43,26 @@ const userSchema = new mongoose.Schema({
     city: String,
     state: String,
     country: String
-  }
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  averageRating: {
+    type: Number,
+    default: 0
+  },
+  reviewsCount: {
+    type: Number,
+    default: 0
+  },
+  portfolioImages: [String] // For tailors, optional
 }, {
   timestamps: true
 });
+
 
 const User = mongoose.model('User', userSchema);
 
