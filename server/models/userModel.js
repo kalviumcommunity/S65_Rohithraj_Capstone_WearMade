@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema({
     default: 'customer'
   },
   profilePicture: {
-    type: String,
+    type: String
   },
   bio: String,
   socialLinks: {
