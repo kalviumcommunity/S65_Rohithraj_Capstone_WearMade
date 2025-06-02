@@ -5,7 +5,7 @@ import {
 } from 'react-router-dom';
 
 
-import LoginPage from '@/pages/Auth/LoginPage';
+import LoginPage from '@/pages/auth/LoginPage';
 import NotFound from '@/pages/NotFound';
 
 const AppRoutes = () => {
