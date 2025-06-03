@@ -136,7 +136,7 @@ const getMe = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    res.json({ user: user.id });
+    res.json({ user });
   } catch (err) {
     res.status(401).json({ message: 'Invalid token' });
   }
