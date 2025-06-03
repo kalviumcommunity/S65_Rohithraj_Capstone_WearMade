@@ -1,7 +1,7 @@
 import { GalleryVerticalEnd } from "lucide-react"
-import { LoginForm } from '@/components/auth/LoginForm'
+import { SignupForm } from '@/components/auth/SignupForm'
 
-export default function LoginPage() {
+export default function SignupPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4">
       <a href="#" className="mb-6 flex items-center gap-2 font-medium">
@@ -11,7 +11,7 @@ export default function LoginPage() {
         WearMade
       </a>
       <div className="w-full max-w-xs">
-        <LoginForm />
+        <SignupForm />
       </div>
     </div>
   )
