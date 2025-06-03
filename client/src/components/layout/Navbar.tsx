@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
@@ -10,24 +10,53 @@ import logo from '@/assets/logo.svg';
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const { user, logout, loading } = useAuth();
+  const [authError, setAuthError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  
+  // Safely access auth context with error handling
+  const auth = useAuth();
+  const { user, logout, loading } = auth || { user: null, logout: async () => {}, loading: true };
+
+  useEffect(() => {
+    // Clear any auth errors when component unmounts or dependencies change
+    return () => {
+      setAuthError(null);
+    };
+  }, [user]);
 
   const handleLogout = async () => {
     try {
       await logout();
+      navigate('/login'); // Redirect to login page after logout
     } catch (error) {
       console.error('Logout failed:', error);
+      setAuthError('Failed to log out. Please try again.');
+      // Could show a toast notification here
     }
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Searching for:', query);
-    // Implement search functionality
+    if (query.trim()) {
+      navigate(`/search?q=${encodeURIComponent(query)}`);
+    }
   };
 
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      {/* Auth error message display */}
+      {authError && (
+        <div className="bg-red-100 text-red-700 px-4 py-2 text-sm text-center">
+          {authError}
+          <button 
+            onClick={() => setAuthError(null)} 
+            className="ml-2 font-bold"
+          >
+            ×
+          </button>
+        </div>
+      )}
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center h-16">
           {/* Logo - made bigger */}
@@ -99,7 +128,9 @@ const Navbar = () => {
                 <div className="relative group">
                   <button className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
                     <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center">
-                      <span className="text-white text-sm font-medium">{user.name.charAt(0).toUpperCase()}</span>
+                      <span className="text-white text-sm font-medium">
+                        {user.name ? user.name.charAt(0).toUpperCase() : '?'}
+                      </span>
                     </div>
                   </button>
                   {/* User Dropdown */}
