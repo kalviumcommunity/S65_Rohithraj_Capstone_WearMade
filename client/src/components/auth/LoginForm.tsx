@@ -35,11 +35,9 @@ export function LoginForm(props) {
     try {
       await login(usernameOrEmail, password);
       setSuccess("Login successful!");
-      setTimeout(() => {
-        navigate("/");
-      }, 100);
-    } catch (err: unknown) {
-      setError(err?.response?.data?.message || "Login failed.");
+      setTimeout(() => navigate("/"), 1000);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Login failed.");
     }
   };
 

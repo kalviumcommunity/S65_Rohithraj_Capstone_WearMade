@@ -77,12 +77,12 @@ const login = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(401).json({ message: `${usernameOrEmail} or ${password} is incorrect` });
+      return res.status(401).json({ message: `username/email or password is incorrect` });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: `${usernameOrEmail} or ${password} is incorrect` });
+      return res.status(401).json({ message: `username/email or password is incorrect` });
     }
 
     const token = generateToken(user._id);
@@ -143,10 +143,19 @@ const getMe = async (req, res) => {
   }
 };
 
+const logout = (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    sameSite: 'Lax',
+  });
+  res.status(200).json({ message: 'Logged out successfully' });
+};
+
 module.exports = {
   signup,
   login,
   getUsers,
   checkEmailOrUsernameExists,
-  getMe
+  getMe,
+  logout
 };

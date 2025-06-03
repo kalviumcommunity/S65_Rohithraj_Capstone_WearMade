@@ -54,6 +54,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         { withCredentials: true }
       );
       await fetchUser();
+    } catch (error) {
+      setUser(null); // Ensure user is cleared on login failure
+      throw error; // Re-throw the error so the calling component can handle it
     } finally {
       setLoading(false);
     }
