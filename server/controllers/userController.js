@@ -21,13 +21,9 @@ const getUsers = async (req, res) => {
 const signup = async (req, res) => {
   try {
     const { name, username, email, password, role } = req.body;
-
-    if (!req.file) {
-      return res.status(400).json({ message: 'Profile picture is required' });
+    if (!name || !username || !email || !password || !role) {
+      return res.status(400).json({ message: 'All fields are required' });
     }
-
-
-    const profilePicture = req.file.path || req.file.url;
 
     const userExists = await User.findOne({ $or: [{ email }, { username }] });
     if (userExists) {
@@ -43,10 +39,16 @@ const signup = async (req, res) => {
       email,
       password: hashedPassword,
       role,
-      profilePicture,
     });
 
     if (user) {
+      const token = generateToken(user._id);
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+      });
       res.status(201).json({
         message: 'Account created successfully',
         user: {
@@ -55,9 +57,7 @@ const signup = async (req, res) => {
           username: user.username,
           email: user.email,
           role: user.role,
-          profilePicture: user.profilePicture,
-        },
-        token: generateToken(user._id),
+        }
       });
     }
   } catch (error) {
@@ -68,34 +68,85 @@ const signup = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { usernameOrEmail, password } = req.body;
+    if (!usernameOrEmail || !password) {
+      return res.status(400).json({ message: 'Username/email and password are required' });
+    }
 
     const user = await User.findOne({
       $or: [{ email: usernameOrEmail }, { username: usernameOrEmail }],
     });
 
-    if (user && (await bcrypt.compare(password, user.password))) {
-      res.status(200).json({
-        message: 'Login successful',
-        user: {
-          _id: user._id,
-          name: user.name,
-          username: user.username,
-          email: user.email,
-          role: user.role,
-          profilePicture: user.profilePicture
-        },
-        token: generateToken(user._id),
-      });
-    } else {
-      res.status(401).json({ message: 'Invalid username/email or password' });
+    if (!user) {
+      return res.status(401).json({ message: `${usernameOrEmail} or ${password} is incorrect` });
     }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: `${usernameOrEmail} or ${password} is incorrect` });
+    }
+
+    const token = generateToken(user._id);
+    res.cookie('token', token, {
+      httpOnly: true,
+      sameSite: 'Lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
+    res.status(200).json({
+      message: 'Login successful',
+      user: {
+        _id: user._id,
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+const checkEmailOrUsernameExists = async (req, res) => {
+  try {
+    const { email, username } = req.query;
+    if (!email && !username) {
+      return res.status(400).json({ message: 'Email or username is required' });
+    }
+
+    const user = await User.findOne({
+      $or: [
+        ...(email ? [{ email }] : []),
+        ...(username ? [{ username }] : [])
+      ]
+    });
+    res.json({ exists: !!user });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getMe = async (req, res) => {
+  const token = req.cookies.token;
+  if (!token) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ user: user.id });
+  } catch (err) {
+    res.status(401).json({ message: 'Invalid token' });
   }
 };
 
 module.exports = {
   signup,
   login,
-  getUsers
+  getUsers,
+  checkEmailOrUsernameExists,
+  getMe
 };
