@@ -50,12 +50,16 @@ const signup = async (req, res) => {
 
     if (user) {
       const token = generateToken(user._id);
+      const isProduction = process.env.NODE_ENV === 'production';
+
       res.cookie('token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Add this line
-        sameSite: 'None', // Change from 'Lax' to 'None' for cross-site requests
-        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+        path: '/',
+        maxAge: 30 * 24 * 60 * 60 * 1000,
       });
+
       res.status(201).json({
         message: 'Account created successfully',
         user: {
@@ -93,12 +97,16 @@ const login = async (req, res) => {
     }
 
     const token = generateToken(user._id);
+    const isProduction = process.env.NODE_ENV === 'production';
+
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Add this line
-      sameSite: 'None', // Change from 'Lax' to 'None' for cross-site requests
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      path: '/',
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
+
     res.status(200).json({
       message: 'Login successful',
       user: {
@@ -154,8 +162,9 @@ const getMe = async (req, res) => {
 const logout = (req, res) => {
   res.clearCookie('token', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: true, // Add this for production
     sameSite: 'None',
+    path: '/' // Ensure cookie is available across all paths
   });
   res.status(200).json({ message: 'Logged out successfully' });
 };

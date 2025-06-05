@@ -39,7 +39,9 @@ export function LoginForm(props: LoginFormProps) {
     }
 
     try {
-      await axios.post(`${VITE_API_BASE_URL}/api/users/login`, { usernameOrEmail, password });
+      await axios.post(`${VITE_API_BASE_URL}/api/users/login`, { usernameOrEmail, password }, {
+        withCredentials: true,
+      });
       setSuccess("Login successful!");
       setTimeout(() => navigate("/"), 1000);
     } catch (err: any) {

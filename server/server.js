@@ -12,7 +12,6 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'https://wearmade.vercel.app',
-
   ],
   credentials: true,
 }));
