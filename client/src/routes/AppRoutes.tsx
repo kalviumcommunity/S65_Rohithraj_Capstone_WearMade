@@ -9,13 +9,11 @@ import LoginPage from '@/pages/auth/LoginPage';
 import SignupPage from '@/pages/auth/SignupPage';
 import ProfilePage from '@/pages/profile/ProfilePage';
 import Home from '@/pages/Home';
-import { useAuth } from '@/context/AuthContext';
 
 import NotFound from '@/pages/NotFound';
 
 
 const AppRoutes = () => {
-  const { user } = useAuth();
   
   return (
     <BrowserRouter>

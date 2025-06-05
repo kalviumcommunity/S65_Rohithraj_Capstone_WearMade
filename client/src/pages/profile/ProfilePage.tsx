@@ -22,7 +22,7 @@ const ProfilePage: React.FC = () => {
   const [likedItems, setLikedItems] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'works' | 'services' | 'liked' | 'about'>('works');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | undefined>(undefined);
   const navigate = useNavigate();
   
   // Determine if viewing own profile or someone else's
@@ -37,7 +37,7 @@ const ProfilePage: React.FC = () => {
     
     const fetchProfileData = async () => {
       setIsLoading(true);
-      setError(null);
+      setError(undefined);
       
       try {
         if (username && username !== user?.username) {
@@ -65,7 +65,7 @@ const ProfilePage: React.FC = () => {
         console.error('Error fetching profile data:', error);
         setError('Failed to load profile data. Please try again later.');
       } finally {
-        setIsLoading(false);
+        setIsLoading(undefined); // or setIsLoading(false);
       }
     };
     

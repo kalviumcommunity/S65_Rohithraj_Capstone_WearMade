@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Heart, Bookmark } from 'lucide-react';
-import { Illustration } from '../types/types';
 
 interface WorkCardProps {
-  illustration: Illustration;
+  imageUrl: string;
+  title: string;
   isHovered: boolean;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
@@ -11,7 +11,8 @@ interface WorkCardProps {
 }
 
 export const WorkCard: React.FC<WorkCardProps> = ({
-  illustration,
+  imageUrl,
+  title,
   isHovered,
   onMouseEnter,
   onMouseLeave,
@@ -28,8 +29,8 @@ export const WorkCard: React.FC<WorkCardProps> = ({
     >
       <div className="relative pb-[75%] bg-gray-100 overflow-hidden">
         <img
-          src={illustration.imageUrl}
-          alt={illustration.title}
+          src={imageUrl}
+          alt={title}
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
 
@@ -40,9 +41,8 @@ export const WorkCard: React.FC<WorkCardProps> = ({
         >
           <div className="absolute bottom-0 left-0 right-0 p-4">
             <h3 className="text-white font-semibold text-lg mb-2 truncate">
-              {illustration.title}
+              {title}
             </h3>
-            {/* Only show like/save if not own account */}
             {!isOwnAccount && (
               <div className="flex items-center justify-end gap-2">
                 <button

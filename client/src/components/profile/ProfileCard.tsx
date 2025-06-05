@@ -28,7 +28,6 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   userData 
 }) => {
   const { user, loading } = useAuth();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

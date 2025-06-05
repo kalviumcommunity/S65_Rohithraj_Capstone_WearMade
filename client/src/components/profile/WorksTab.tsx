@@ -1,5 +1,6 @@
 import React from 'react';
 import { Upload } from 'lucide-react';
+import { Illustration } from '../../types/types';
 
 interface WorksTabProps {
   portfolioItems: any[];

@@ -7,6 +7,10 @@ type User = {
   username: string;
   email: string;
   role: string;
+  avatar?: string;
+  location?: string;
+  followers?: any[];
+  following?: any[];
   // add other user fields as needed
 } | null;
 
