@@ -7,7 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export function LoginForm(props) {
+// Add proper typing for the props
+type LoginFormProps = React.FormHTMLAttributes<HTMLFormElement>;
+
+export function LoginForm(props: LoginFormProps) {
   useAuthRedirect();
 
   const [formData, setFormData] = useState({ usernameOrEmail: "", password: "" });

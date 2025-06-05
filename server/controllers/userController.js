@@ -9,10 +9,17 @@ const generateToken = (id) => {
   });
 };
 
-const getUsers = async (req, res) => {
+const getUser = async (req, res) => {
   try {
-    const users = await User.find().select('-password');
-    res.json(users);
+    const { username } = req.params;
+    if (!username) {
+      return res.status(400).json({ message: 'Username is required' });
+    }
+    const user = await User.findOne({ username }).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -153,7 +160,7 @@ const logout = (req, res) => {
 module.exports = {
   signup,
   login,
-  getUsers,
+  getUser,
   checkEmailOrUsernameExists,
   getMe,
   logout
