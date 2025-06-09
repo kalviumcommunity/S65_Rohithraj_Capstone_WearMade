@@ -20,60 +20,60 @@ const ProfilePage: React.FC = () => {
   const [portfolioItems, setPortfolioItems] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [likedItems, setLikedItems] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<'works' | 'services' | 'liked' | 'about'>('works');
   const [error, setError] = useState<string | undefined>(undefined);
   const navigate = useNavigate();
-  
+
   // Determine if viewing own profile or someone else's
   const viewingSelf = !username || (user && user.username === username);
-  
+
   useEffect(() => {
     // If no user is logged in and not loading, redirect to login
     if (!loading && !user) {
       navigate('/login');
       return;
     }
-    
+
     const fetchProfileData = async () => {
       setIsLoading(true);
       setError(undefined);
-      
+
       try {
         if (username && username !== user?.username) {
           // If username is provided and it's not the current user, fetch that user's profile
           const response = await axios.get(`${VITE_API_BASE_URL}/api/users/${username}`);
           setProfileData(response.data);
-          
+
           // You'd also fetch their public portfolio items here
           // setPortfolioItems(response.data.portfolioItems || []);
         } else {
           // If on own profile route, use current logged-in user data
           setProfileData(user);
-          
+
           // You'd fetch your own portfolio items, services here
           // const portfolioResponse = await axios.get(`${VITE_API_BASE_URL}/api/portfolio`);
           // setPortfolioItems(portfolioResponse.data);
         }
-        
+
         // For now, just set empty arrays until API endpoints are ready
         setPortfolioItems([]);
         setServices([]);
         setLikedItems([]);
-        
+
       } catch (error) {
         console.error('Error fetching profile data:', error);
         setError('Failed to load profile data. Please try again later.');
       } finally {
-        setIsLoading(undefined); // or setIsLoading(false);
+        setIsLoading(false); // FIX: Use false, not undefined/null
       }
     };
-    
+
     if (!loading) {
       fetchProfileData();
     }
   }, [username, user, loading, navigate]);
-  
+
   const handleUploadWork = () => {
     // Handle uploading work functionality
     console.log('Upload work clicked');
@@ -96,7 +96,7 @@ const ProfilePage: React.FC = () => {
       </div>
     );
   }
-  
+
   if (error) {
     return (
       <div className="min-h-screen bg-white">
@@ -120,14 +120,14 @@ const ProfilePage: React.FC = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
       
       {/* Profile Card Section */}
       <ProfileCard 
-        viewingSelf={viewingSelf} 
+        viewingSelf={!!viewingSelf} 
         userData={profileData} 
       />
       
@@ -135,7 +135,7 @@ const ProfilePage: React.FC = () => {
       <TabsBar
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        viewingSelf={viewingSelf}
+        viewingSelf={!!viewingSelf}
       />
       
       {/* Content based on active tab */}
@@ -145,7 +145,7 @@ const ProfilePage: React.FC = () => {
           {activeTab === 'works' && (
             <WorksTab 
               portfolioItems={portfolioItems}
-              viewingSelf={viewingSelf}
+              viewingSelf={!!viewingSelf}
               onUploadClick={handleUploadWork}
             />
           )}
@@ -154,7 +154,7 @@ const ProfilePage: React.FC = () => {
           {activeTab === 'services' && (
             <ServicesTab 
               services={services}
-              viewingSelf={viewingSelf}
+              viewingSelf={!!viewingSelf}
               onAddService={handleAddService}
             />
           )}
@@ -163,7 +163,7 @@ const ProfilePage: React.FC = () => {
           {activeTab === 'liked' && (
             <LikedPostsTab 
               likedItems={likedItems}
-              viewingSelf={viewingSelf}
+              viewingSelf={!!viewingSelf}
             />
           )}
           

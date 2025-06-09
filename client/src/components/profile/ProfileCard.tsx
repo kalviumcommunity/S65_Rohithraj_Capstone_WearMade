@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 
@@ -28,13 +28,12 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   userData 
 }) => {
   const { user, loading } = useAuth();
-  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
+      // No menu state to update, so just return
+      if (!event.target || !(event.target instanceof HTMLElement)) return;
+      return
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => {

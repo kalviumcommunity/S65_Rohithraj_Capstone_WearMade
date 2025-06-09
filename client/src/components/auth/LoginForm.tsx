@@ -6,9 +6,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import axios from "axios";
-
-const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Add proper typing for the props
 type LoginFormProps = React.FormHTMLAttributes<HTMLFormElement>;
@@ -39,9 +36,7 @@ export function LoginForm(props: LoginFormProps) {
     }
 
     try {
-      await axios.post(`${VITE_API_BASE_URL}/api/users/login`, { usernameOrEmail, password }, {
-        withCredentials: true,
-      });
+      login(usernameOrEmail, password);
       setSuccess("Login successful!");
       setTimeout(() => navigate("/"), 1000);
     } catch (err: any) {
