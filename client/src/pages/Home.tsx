@@ -31,8 +31,8 @@ const Home = () => {
             ready to take on your next project
           </p>
           
-          {/* Search Bar - Styled Like Navbar */}
-          <form onSubmit={handleHeroSearch} className="max-w-3xl mx-auto mb-10">
+          {/* Search Bar - With ID for Intersection Observer */}
+          <form id="hero-search" onSubmit={handleHeroSearch} className="max-w-3xl mx-auto mb-10">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <input

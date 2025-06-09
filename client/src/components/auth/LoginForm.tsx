@@ -7,7 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export function LoginForm(props) {
+// Add proper typing for the props
+type LoginFormProps = React.FormHTMLAttributes<HTMLFormElement>;
+
+export function LoginForm(props: LoginFormProps) {
   useAuthRedirect();
 
   const [formData, setFormData] = useState({ usernameOrEmail: "", password: "" });
@@ -33,7 +36,7 @@ export function LoginForm(props) {
     }
 
     try {
-      await login(usernameOrEmail, password);
+      login(usernameOrEmail, password);
       setSuccess("Login successful!");
       setTimeout(() => navigate("/"), 1000);
     } catch (err: any) {

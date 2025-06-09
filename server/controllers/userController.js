@@ -9,10 +9,17 @@ const generateToken = (id) => {
   });
 };
 
-const getUsers = async (req, res) => {
+const getUser = async (req, res) => {
   try {
-    const users = await User.find().select('-password');
-    res.json(users);
+    const { username } = req.params;
+    if (!username) {
+      return res.status(400).json({ message: 'Username is required' });
+    }
+    const user = await User.findOne({ username }).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -43,11 +50,16 @@ const signup = async (req, res) => {
 
     if (user) {
       const token = generateToken(user._id);
+      const isProduction = process.env.NODE_ENV === 'production';
+
       res.cookie('token', token, {
         httpOnly: true,
-        sameSite: 'Lax',
-        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+        path: '/',
+        maxAge: 30 * 24 * 60 * 60 * 1000,
       });
+
       res.status(201).json({
         message: 'Account created successfully',
         user: {
@@ -85,11 +97,16 @@ const login = async (req, res) => {
     }
 
     const token = generateToken(user._id);
+    const isProduction = process.env.NODE_ENV === 'production';
+
     res.cookie('token', token, {
       httpOnly: true,
-      sameSite: 'Lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      path: '/',
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
+
     res.status(200).json({
       message: 'Login successful',
       user: {
@@ -145,7 +162,9 @@ const getMe = async (req, res) => {
 const logout = (req, res) => {
   res.clearCookie('token', {
     httpOnly: true,
-    sameSite: 'Lax',
+    secure: true, // Add this for production
+    sameSite: 'None',
+    path: '/' // Ensure cookie is available across all paths
   });
   res.status(200).json({ message: 'Logged out successfully' });
 };
@@ -153,7 +172,7 @@ const logout = (req, res) => {
 module.exports = {
   signup,
   login,
-  getUsers,
+  getUser,
   checkEmailOrUsernameExists,
   getMe,
   logout
