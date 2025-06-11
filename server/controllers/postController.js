@@ -17,11 +17,18 @@ function getCloudinaryPublicId(url) {
 const addPost = async (req, res) => {
   try {
     const { title, description, tags } = req.body;
-    const userId = req.user.id;
     let images = [];
     if (req.files && req.files.length > 0) {
       images = req.files.map(file => file.path || file.secure_url || file.url);
     }
+    // Validation for required fields
+    if (!images || images.length === 0) {
+      return res.status(400).json({ message: 'Images are required' });
+    }
+    if (!tags || (Array.isArray(tags) ? tags.length === 0 : tags.trim() === '')) {
+      return res.status(400).json({ message: 'Tags are required' });
+    }
+    const userId = req.user.id;
     const post = await Post.create({
       user: userId,
       title,
@@ -126,9 +133,12 @@ const commentOnPost = async (req, res) => {
     const { postId } = req.params;
     const userId = req.user.id;
     const { content } = req.body;
+    if (!content || content.trim().length === 0) {
+      return res.status(400).json({ message: 'Comment content is required' });
+    }
     const post = await Post.findById(postId);
     if (!post) return res.status(404).json({ message: 'Post not found' });
-    const comment = { user: userId, content, createdAt: new Date() };
+    const comment = { user: userId, content: content.trim(), createdAt: new Date() };
     post.comments.push(comment);
     await post.save();
     res.status(201).json({ message: 'Comment added', comment });
@@ -177,21 +187,38 @@ const getPostsByUser = async (req, res) => {
 const getExplorePosts = async (req, res) => {
   try {
     const { type } = req.query;
-    let sortOption = {};
+    let sortStage = {};
     if (type === 'popular') {
-      sortOption = { likes: -1, views: -1 };
+      // Sort by number of likes (descending), then views (descending)
+      sortStage = { likesCount: -1, views: -1 };
     } else if (type === 'recent') {
-      sortOption = { createdAt: -1 };
+      // Sort by creation date (descending)
+      sortStage = { createdAt: -1 };
     } else if (type === 'extra') {
-      sortOption = { comments: -1 };
+      // Sort by number of comments (descending)
+      sortStage = { commentsCount: -1 };
     } else {
-      sortOption = { createdAt: -1 };
+      sortStage = { createdAt: -1 };
     }
-    const posts = await Post.find()
-      .sort(sortOption)
-      .populate('user', 'username name')
-      .populate('comments.user', 'username name');
-    res.json(posts);
+
+    // Use aggregation for efficient sorting on array lengths
+    const pipeline = [
+      {
+        $addFields: {
+          likesCount: { $size: { $ifNull: ['$likes', []] } },
+          commentsCount: { $size: { $ifNull: ['$comments', []] } },
+        },
+      },
+      { $sort: sortStage },
+    ];
+
+    const posts = await Post.aggregate(pipeline);
+    // Populate user and comments.user fields manually after aggregation
+    const populatedPosts = await Post.populate(posts, [
+      { path: 'user', select: 'username name' },
+      { path: 'comments.user', select: 'username name' },
+    ]);
+    res.json(populatedPosts);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
