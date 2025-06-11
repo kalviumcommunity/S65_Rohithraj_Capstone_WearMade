@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { Heart, Bookmark } from 'lucide-react';
+import { Heart, Bookmark, Eye } from 'lucide-react';
 
 interface PostCardProps {
   post: {
     id: string;
     title: string;
     imageUrl: string;
-    author: {
+    author?: {
       name: string;
       avatarUrl: string;
+      isPro?: boolean;
     };
     likes: number;
     views: number;
@@ -24,7 +25,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
   return (
     <div
-      className="bg-white rounded-xl overflow-hidden shadow group transition-all duration-300 relative"
+      className="relative bg-white rounded-lg overflow-hidden shadow-md"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -37,43 +38,66 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         />
         {/* Overlay on hover */}
         <div
-          className={`absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/70 via-black/40 to-transparent transition-opacity duration-300 ${
+          className={`absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex flex-col justify-end transition-opacity duration-300 ${
             hovered ? 'opacity-100' : 'opacity-0'
           }`}
         >
           <div className="p-4">
-            <h3 className="text-white font-semibold text-lg mb-4 truncate">{post.title}</h3>
-            <div className="flex gap-4 justify-end">
-              <button
-                onClick={() => setBookmarked((b) => !b)}
-                className="rounded-full bg-white/20 text-white hover:bg-white/30 p-3 transition-colors"
-                aria-label={bookmarked ? 'Remove from saved' : 'Save post'}
-              >
-                <Bookmark size={22} fill={bookmarked ? 'white' : 'none'} />
-              </button>
-              <button
-                onClick={() => setLiked((l) => !l)}
-                className="rounded-full bg-white/20 text-white hover:bg-white/30 p-3 transition-colors"
-                aria-label={liked ? 'Unlike post' : 'Like post'}
-              >
-                <Heart size={22} fill={liked ? 'white' : 'none'} />
-              </button>
-            </div>
+            <h3 className="text-white font-medium text-lg truncate">{post.title}</h3>
           </div>
         </div>
+        {/* Action buttons - positioned absolute, only visible on hover */}
+        <div
+          className={`absolute top-3 right-3 flex gap-2 transition-opacity duration-300 pointer-events-auto ${
+            hovered ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setBookmarked(!bookmarked);
+            }}
+            className="rounded-full bg-white/90 p-2.5 shadow-sm hover:bg-white"
+            aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark'}
+          >
+            <Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setLiked(!liked);
+            }}
+            className="rounded-full bg-white/90 p-2.5 shadow-sm hover:bg-white"
+            aria-label={liked ? 'Unlike' : 'Like'}
+          >
+            <Heart size={18} fill={liked ? 'currentColor' : 'none'} />
+          </button>
+        </div>
       </div>
-      {/* Bottom Section */}
-      <div className="flex items-center gap-3 px-4 py-3">
-        <img
-          src={post.author.avatarUrl}
-          alt={post.author.name}
-          className="w-8 h-8 rounded-full object-cover"
-        />
-        <span className="font-medium text-gray-900 text-sm truncate">{post.author.name}</span>
+      {/* User info and stats */}
+      <div className="flex items-center gap-3 p-3">
+        {post.author && (
+          <>
+            <img
+              src={post.author.avatarUrl}
+              alt={post.author.name}
+              className="w-7 h-7 rounded-full object-cover"
+            />
+            <span className="font-medium text-gray-900 text-sm flex items-center gap-1">
+              {post.author.name}
+              {post.author.isPro && (
+                <span className="bg-gray-200 text-xs px-1.5 py-0.5 rounded-full">PRO</span>
+              )}
+            </span>
+          </>
+        )}
         <div className="flex-1" />
-        <div className="flex items-center gap-3 text-gray-500 text-sm">
-          <span className="flex items-center gap-1">
-            <Heart size={16} className="inline" /> {post.likes}
+        <div className="flex items-center gap-2 text-gray-500 text-sm">
+          <span className="flex items-center">
+            <Heart size={15} className="mr-1" /> {post.likes}
+          </span>
+          <span className="flex items-center">
+            <Eye size={15} className="mr-1" /> {post.views}
           </span>
         </div>
       </div>
