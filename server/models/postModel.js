@@ -1,16 +1,19 @@
 const mongoose = require('mongoose');
 
 const postSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // User or tailor posting
-  images: [{ type: String }], // Cloudinary URLs for post images
-  description: String, // Caption or post content
-  tags: [{ type: String }], // e.g., ["fashion", "handmade"]
-  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Users who liked
-  comments: [{
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    content: String,
-    createdAt: { type: Date, default: Date.now }
-  }],
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  images: [{ type: String, required: true }],
+  description: String,
+  tags: [{ type: String, required: true }],
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  comments: [
+    {
+      user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      content: String,
+      createdAt: { type: Date, default: Date.now }
+    }
+  ],
+  views: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
 });
 
