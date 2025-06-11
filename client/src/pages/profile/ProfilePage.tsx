@@ -73,10 +73,8 @@ const ProfilePage: React.FC = () => {
       fetchProfileData();
     }
   }, [username, user, loading, navigate]);
-
   const handleUploadWork = () => {
-    // Handle uploading work functionality
-    console.log('Upload work clicked');
+    navigate('/upload/new');
   };
 
   const handleAddService = () => {
