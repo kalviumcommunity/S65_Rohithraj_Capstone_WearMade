@@ -65,7 +65,7 @@ const ProfilePage: React.FC = () => {
         console.error('Error fetching profile data:', error);
         setError('Failed to load profile data. Please try again later.');
       } finally {
-        setIsLoading(false); // FIX: Use false, not undefined/null
+        setIsLoading(false);
       }
     };
 
@@ -73,6 +73,7 @@ const ProfilePage: React.FC = () => {
       fetchProfileData();
     }
   }, [username, user, loading, navigate]);
+
   const handleUploadWork = () => {
     navigate('/upload/new');
   };
@@ -122,20 +123,17 @@ const ProfilePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
-      
       {/* Profile Card Section */}
       <ProfileCard 
         viewingSelf={!!viewingSelf} 
         userData={profileData} 
       />
-      
       {/* Tabs Bar */}
       <TabsBar
         activeTab={activeTab}
         onTabChange={setActiveTab}
         viewingSelf={!!viewingSelf}
       />
-      
       {/* Content based on active tab */}
       <section className="py-8 px-4">
         <div className="container mx-auto max-w-6xl">
@@ -147,7 +145,6 @@ const ProfilePage: React.FC = () => {
               onUploadClick={handleUploadWork}
             />
           )}
-          
           {/* Services Tab */}
           {activeTab === 'services' && (
             <ServicesTab 
@@ -156,7 +153,6 @@ const ProfilePage: React.FC = () => {
               onAddService={handleAddService}
             />
           )}
-          
           {/* Liked Tab */}
           {activeTab === 'liked' && (
             <LikedPostsTab 
@@ -164,7 +160,6 @@ const ProfilePage: React.FC = () => {
               viewingSelf={!!viewingSelf}
             />
           )}
-          
           {/* About Tab */}
           {activeTab === 'about' && (
             <div className="prose max-w-none">
@@ -172,7 +167,6 @@ const ProfilePage: React.FC = () => {
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 mb-4">About</h2>
                   <p className="text-gray-700 leading-relaxed">{profileData.bio}</p>
-                  
                   {/* Specializations */}
                   {profileData.specializations && profileData.specializations.length > 0 && (
                     <div className="mt-8">
@@ -189,7 +183,6 @@ const ProfilePage: React.FC = () => {
                       </div>
                     </div>
                   )}
-                  
                   {/* Location */}
                   {profileData.location && (
                     <div className="mt-8">
@@ -226,7 +219,6 @@ const ProfilePage: React.FC = () => {
           )}
         </div>
       </section>
-      
       <Footer />
     </div>
   );
