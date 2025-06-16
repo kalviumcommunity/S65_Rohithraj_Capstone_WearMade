@@ -40,32 +40,32 @@ const ProfilePage: React.FC = () => {
       setError(undefined);
 
       try {
+        let userIdToFetch;
         if (username && username !== user?.username) {
           // If username is provided and it's not the current user, fetch that user's profile
           const response = await axios.get(`${VITE_API_BASE_URL}/api/users/${username}`);
           setProfileData(response.data);
-
-          // You'd also fetch their public portfolio items here
-          // setPortfolioItems(response.data.portfolioItems || []);
+          userIdToFetch = response.data._id;
         } else {
           // If on own profile route, use current logged-in user data
           setProfileData(user);
-
-          // You'd fetch your own portfolio items, services here
-          // const portfolioResponse = await axios.get(`${VITE_API_BASE_URL}/api/portfolio`);
-          // setPortfolioItems(portfolioResponse.data);
+          userIdToFetch = user?._id;
         }
 
-        // For now, just set empty arrays until API endpoints are ready
-        setPortfolioItems([]);
+        // Fetch uploaded posts for the user
+        let posts = [];
+        if (userIdToFetch) {
+          const postsRes = await axios.get(`${VITE_API_BASE_URL}/api/posts/user/${userIdToFetch}`);
+          posts = postsRes.data || [];
+        }
+        setPortfolioItems(posts);
         setServices([]);
         setLikedItems([]);
-
       } catch (error) {
         console.error('Error fetching profile data:', error);
         setError('Failed to load profile data. Please try again later.');
       } finally {
-        setIsLoading(false); // FIX: Use false, not undefined/null
+        setIsLoading(false);
       }
     };
 
@@ -73,6 +73,7 @@ const ProfilePage: React.FC = () => {
       fetchProfileData();
     }
   }, [username, user, loading, navigate]);
+
   const handleUploadWork = () => {
     navigate('/upload/new');
   };
@@ -122,20 +123,17 @@ const ProfilePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
-      
       {/* Profile Card Section */}
       <ProfileCard 
         viewingSelf={!!viewingSelf} 
         userData={profileData} 
       />
-      
       {/* Tabs Bar */}
       <TabsBar
         activeTab={activeTab}
         onTabChange={setActiveTab}
         viewingSelf={!!viewingSelf}
       />
-      
       {/* Content based on active tab */}
       <section className="py-8 px-4">
         <div className="container mx-auto max-w-6xl">
@@ -147,7 +145,6 @@ const ProfilePage: React.FC = () => {
               onUploadClick={handleUploadWork}
             />
           )}
-          
           {/* Services Tab */}
           {activeTab === 'services' && (
             <ServicesTab 
@@ -156,7 +153,6 @@ const ProfilePage: React.FC = () => {
               onAddService={handleAddService}
             />
           )}
-          
           {/* Liked Tab */}
           {activeTab === 'liked' && (
             <LikedPostsTab 
@@ -164,7 +160,6 @@ const ProfilePage: React.FC = () => {
               viewingSelf={!!viewingSelf}
             />
           )}
-          
           {/* About Tab */}
           {activeTab === 'about' && (
             <div className="prose max-w-none">
@@ -172,7 +167,6 @@ const ProfilePage: React.FC = () => {
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 mb-4">About</h2>
                   <p className="text-gray-700 leading-relaxed">{profileData.bio}</p>
-                  
                   {/* Specializations */}
                   {profileData.specializations && profileData.specializations.length > 0 && (
                     <div className="mt-8">
@@ -189,7 +183,6 @@ const ProfilePage: React.FC = () => {
                       </div>
                     </div>
                   )}
-                  
                   {/* Location */}
                   {profileData.location && (
                     <div className="mt-8">
@@ -226,7 +219,6 @@ const ProfilePage: React.FC = () => {
           )}
         </div>
       </section>
-      
       <Footer />
     </div>
   );

@@ -16,24 +16,48 @@ function getCloudinaryPublicId(url) {
 // Add a new post with multer and cloudinary
 const addPost = async (req, res) => {
   try {
-    const { title, description, tags } = req.body;
+    const { title, description } = req.body;
+    let tags = req.body.tags;
+    let content = req.body.content;
+    
+    // Parse JSON strings if needed
+    try {
+      if (tags && typeof tags === 'string') {
+        tags = JSON.parse(tags);
+      }
+      if (content && typeof content === 'string') {
+        content = JSON.parse(content);
+      }
+    } catch (parseError) {
+      console.error('Error parsing JSON data:', parseError);
+      // Continue with original values if parsing fails
+    }
+    
+    // Get image from uploaded file
     let images = [];
     if (req.files && req.files.length > 0) {
       images = req.files.map(file => file.path || file.secure_url || file.url);
     }
+    
     // Validation for required fields
     if (!images || images.length === 0) {
-      return res.status(400).json({ message: 'Images are required' });
+      return res.status(400).json({ message: 'Image is required' });
     }
-    if (!tags || (Array.isArray(tags) ? tags.length === 0 : tags.trim() === '')) {
+    if (!title || title.trim() === '') {
+      return res.status(400).json({ message: 'Title is required' });
+    }
+    if (!tags || (Array.isArray(tags) ? tags.length === 0 : !tags.trim())) {
       return res.status(400).json({ message: 'Tags are required' });
     }
+    
     const userId = req.user.id;
+    
+    // Create post
     const post = await Post.create({
       user: userId,
       title,
       images,
-      description,
+      description: description || (content && content.length > 0 && content[0].type === 'paragraph' ? content[0].content : ''),
       tags: Array.isArray(tags) ? tags : tags.split(','),
       likes: [],
       comments: [],
@@ -153,8 +177,8 @@ const getPost = async (req, res) => {
     const { postId } = req.params;
     const userId = req.user ? req.user.id : null;
     const post = await Post.findById(postId)
-      .populate('user', 'username name')
-      .populate('comments.user', 'username name');
+      .populate('user')
+      .populate('comments.user');
     if (!post) return res.status(404).json({ message: 'Post not found' });
     if (userId && post.viewsList && Array.isArray(post.viewsList)) {
       if (!post.viewsList.includes(userId)) {

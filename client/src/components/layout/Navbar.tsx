@@ -6,6 +6,7 @@ import { Search } from 'lucide-react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Message01Icon } from '@hugeicons/core-free-icons';
 import logo from '@/assets/logo.svg';
+import axios from 'axios';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -21,7 +22,7 @@ const Navbar = () => {
   
   // Safely access auth context with error handling
   const auth = useAuth();
-  const { user, logout, loading } = auth || { user: null, logout: async () => {}, loading: true };
+  const { user, loading } = auth || { user: null, loading: true };
 
   // Set up intersection observer to detect when hero search is out of view
   useEffect(() => {
@@ -61,8 +62,10 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await logout();
-      navigate('/login');
+      if (auth && auth.logout) {
+        await auth.logout();
+        navigate('/login');
+      }
     } catch (error) {
       console.error('Logout failed:', error);
       setAuthError('Failed to log out. Please try again.');
@@ -182,14 +185,19 @@ const Navbar = () => {
                   
                   {/* User profile dropdown remains the same */}
                   <div className="relative group">
-                    <button className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
+                    <button
+                      className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                      onClick={() => setIsMenuOpen((open) => !open)}
+                      aria-label="Open profile menu"
+                    >
                       <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center">
                         <span className="text-white text-sm font-medium">
                           {user.name ? user.name.charAt(0).toUpperCase() : '?'}
                         </span>
                       </div>
                     </button>
-                    <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0">
+                    {/* Desktop dropdown */}
+                    <div className="hidden md:block absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0">
                       <div className="py-2">
                         <div className="px-4 py-2 border-b border-gray-100">
                           <p className="text-sm font-medium text-black">{user.name}</p>
@@ -244,10 +252,16 @@ const Navbar = () => {
           {/* Mobile Menu */}
           {isMenuOpen && (
             <div className="md:hidden border-t border-gray-200 py-4 animate-in slide-in-from-top duration-200">
-              {/* Remove search from mobile menu since it's now in the navbar */}
               <div className="space-y-4">
                 <Link to="/explore" className="block text-black hover:text-gray-500 font-medium transition-colors duration-200">Explore</Link>
                 <Link to="/tailors" className="block text-black hover:text-gray-500 font-medium transition-colors duration-200">Hire a Designer</Link>
+                <Link to="/profile" className="block text-black hover:text-gray-500 font-medium transition-colors duration-200">Profile</Link>
+                <button
+                  onClick={handleLogout}
+                  className="block w-full text-left text-red-600 hover:bg-red-50 font-medium px-4 py-2 rounded transition-colors duration-200"
+                >
+                  Sign out
+                </button>
                 {!user && (
                   <div className="pt-4 border-t border-gray-200">
                     <Link to="/signup" className="block text-black hover:text-gray-500 font-medium transition-colors duration-200 mb-2">Sign up</Link>

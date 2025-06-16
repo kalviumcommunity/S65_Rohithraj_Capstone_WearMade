@@ -11,22 +11,19 @@ if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !pr
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true 
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
 const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: async (req, file) => {
-    return {
-      folder: 'wearmade/profiles',
-      allowed_formats: ['jpg', 'jpeg', 'png'],
-      transformation: [
-        { width: 500, height: 500, crop: 'limit' },
-        { quality: 'auto:good', fetch_format: 'auto' }
-      ],
-      public_id: `${Date.now()}-${file.originalname.split('.')[0].replace(/[^a-zA-Z0-9]/g, '')}`
-    };
+  cloudinary,
+  params: {
+    folder: 'wearmade/posts',
+    format: async () => 'webp', // Use WebP format for better quality/compression ratio
+    quality: 90, // Increase quality (0-100)
+    transformation: [
+      { quality: 'auto:best' } // Use Cloudinary's automatic best quality
+    ],
+    resource_type: 'auto'
   }
 });
 
