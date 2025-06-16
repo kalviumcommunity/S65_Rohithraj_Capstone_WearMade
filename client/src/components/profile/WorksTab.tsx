@@ -14,7 +14,7 @@ const WorksTab: React.FC<WorksTabProps> = ({
 }) => {
   return (
     <div>
-      {portfolioItems.length > 0 || viewingSelf ? (
+      {(portfolioItems.length > 0 || viewingSelf) && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {/* Upload New Design Card - Only visible when viewing own profile */}
           {viewingSelf && (
@@ -28,13 +28,11 @@ const WorksTab: React.FC<WorksTabProps> = ({
               </div>
             </div>
           )}
-          
-          {/* Render actual portfolio items here */}
           {portfolioItems.map(item => (
-            <div key={item.id} className="group cursor-pointer">
+            <div key={item._id || item.id} className="group cursor-pointer">
               <div className="relative overflow-hidden rounded-lg">
                 <img 
-                  src={item.image} 
+                  src={item.image || (item.images && item.images[0])} 
                   alt={item.title} 
                   className="w-full h-64 object-cover transform group-hover:scale-105 transition-transform duration-300"
                 />
@@ -42,10 +40,9 @@ const WorksTab: React.FC<WorksTabProps> = ({
                   <div className="p-4 w-full">
                     <p className="text-white font-medium">{item.title}</p>
                     <div className="flex items-center mt-1">
-                      <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-white text-sm ml-1">{item.likes}</span>
+  
+                      {/* Like count removed on hover as requested */}
+                      {/* <span className="text-white text-sm ml-1">{item.likes ? item.likes.length : 0}</span> */}
                     </div>
                   </div>
                 </div>
@@ -53,7 +50,9 @@ const WorksTab: React.FC<WorksTabProps> = ({
             </div>
           ))}
         </div>
-      ) : (
+      )}
+      {/* Empty state - No works yet */}
+      {portfolioItems.length === 0 && !viewingSelf && (
         <div className="text-center py-12">
           <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />

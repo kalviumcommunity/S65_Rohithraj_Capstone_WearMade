@@ -27,8 +27,10 @@ const userSchema = new mongoose.Schema({
     enum: ['customer', 'tailor'],
     default: 'customer'
   },
-  profilePicture: {
-    type: String
+  avatar: {
+    type: String,
+    trim: true,
+    default: ""
   },
   bio: String,
   socialLinks: {

@@ -40,27 +40,27 @@ const ProfilePage: React.FC = () => {
       setError(undefined);
 
       try {
+        let userIdToFetch;
         if (username && username !== user?.username) {
           // If username is provided and it's not the current user, fetch that user's profile
           const response = await axios.get(`${VITE_API_BASE_URL}/api/users/${username}`);
           setProfileData(response.data);
-
-          // You'd also fetch their public portfolio items here
-          // setPortfolioItems(response.data.portfolioItems || []);
+          userIdToFetch = response.data._id;
         } else {
           // If on own profile route, use current logged-in user data
           setProfileData(user);
-
-          // You'd fetch your own portfolio items, services here
-          // const portfolioResponse = await axios.get(`${VITE_API_BASE_URL}/api/portfolio`);
-          // setPortfolioItems(portfolioResponse.data);
+          userIdToFetch = user?._id;
         }
 
-        // For now, just set empty arrays until API endpoints are ready
-        setPortfolioItems([]);
+        // Fetch uploaded posts for the user
+        let posts = [];
+        if (userIdToFetch) {
+          const postsRes = await axios.get(`${VITE_API_BASE_URL}/api/posts/user/${userIdToFetch}`);
+          posts = postsRes.data || [];
+        }
+        setPortfolioItems(posts);
         setServices([]);
         setLikedItems([]);
-
       } catch (error) {
         console.error('Error fetching profile data:', error);
         setError('Failed to load profile data. Please try again later.');

@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import PostCard from './PostCard';
 import { Button } from '../ui/button';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 interface Block {
   id: string;
@@ -23,12 +24,18 @@ const PostForm: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageFileRef = useRef<File | null>(null);
+  
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   // Handle image upload
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      imageFileRef.current = file;
       setImageUrl(URL.createObjectURL(file));
       setStep(2);
     }
@@ -39,11 +46,65 @@ const PostForm: React.FC = () => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     if (file) {
+      imageFileRef.current = file;
       setImageUrl(URL.createObjectURL(file));
       setStep(2);
     }
   };
-
+    // Function to publish post using API
+  const publishPost = async () => {
+    if (!title.trim() || !imageUrl || tags.length === 0 || !imageFileRef.current) {
+      setPublishError('Please fill all required fields');
+      return;
+    }
+    
+    try {
+      setIsPublishing(true);
+      setPublishError(null);
+      
+      // Create form data for multipart/form-data request
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('image', imageFileRef.current);
+      formData.append('tags', JSON.stringify(tags));
+      
+      // Add content blocks including description
+      formData.append('content', JSON.stringify(blocks.map(block => ({
+        type: block.type,
+        content: block.content,
+      }))));
+      
+      // Add description separately if exists (for backward compatibility)
+      if (blocks.length > 0 && blocks[0]?.type === 'paragraph') {
+        formData.append('description', blocks[0].content);
+      }
+      
+      // Make API request with credentials
+      const response = await axios.post(
+        `${API_BASE_URL}/api/posts`, 
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
+        }      );
+      
+      console.log('Post published successfully:', response.data);
+      
+      // On successful response, redirect to the post or profile
+      if (response.data && response.data.post && response.data.post._id) {
+        navigate(`/posts/${response.data.post._id}`); // Navigate to the post using post._id
+      } else {
+        navigate('/profile'); // Otherwise go to profile page
+      }
+    } catch (error: unknown) {
+      console.error('Error publishing post:', error);
+      setPublishError('Failed to publish post. Please try again.');
+    } finally {
+      setIsPublishing(false);
+    }
+  };
 
   // Update block content
   const handleBlockChange = (id: string, value: string) => {
@@ -269,12 +330,17 @@ const PostForm: React.FC = () => {
                   <div className="mr-2 flex items-center text-amber-500 text-sm">
                     <span>Add at least one tag</span>
                   </div>
+                )}                {publishError && (
+                  <div className="mr-2 flex items-center text-red-500 text-sm">
+                    <span>{publishError}</span>
+                  </div>
                 )}
                 <button 
                   className={`px-6 py-2.5 rounded-full ${title.trim() && imageUrl && tags.length > 0 ? 'bg-gray-900 hover:bg-gray-800' : 'bg-gray-300 cursor-not-allowed'} text-white font-medium transition-colors`}
-                  disabled={!title.trim() || !imageUrl || tags.length === 0}
+                  disabled={!title.trim() || !imageUrl || tags.length === 0 || isPublishing}
+                  onClick={publishPost}
                 >
-                  Publish now
+                  {isPublishing ? 'Publishing...' : 'Publish now'}
                 </button>
               </div>
             </div>

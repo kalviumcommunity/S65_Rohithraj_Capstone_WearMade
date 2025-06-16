@@ -49,23 +49,23 @@ const Home = () => {
           <div className="mt-8">
             <p className="text-sm text-gray-500 mb-3">Trending searches</p>
             <div className="flex flex-wrap justify-center gap-2">
-              <Link to="/search?q=landing-page" className="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-700 hover:bg-gray-200 transition-colors duration-200">
-                landing page
+              <Link to="/search?q=fashion-illustration" className="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-700 hover:bg-gray-200 transition-colors duration-200">
+                fashion illustration
               </Link>
-              <Link to="/search?q=e-commerce" className="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-700 hover:bg-gray-200 transition-colors duration-200">
-                e-commerce
+              <Link to="/search?q=pattern-design" className="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-700 hover:bg-gray-200 transition-colors duration-200">
+                pattern design
               </Link>
-              <Link to="/search?q=mobile-app" className="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-700 hover:bg-gray-200 transition-colors duration-200">
-                mobile app
+              <Link to="/search?q=textile-art" className="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-700 hover:bg-gray-200 transition-colors duration-200">
+                textile art
               </Link>
-              <Link to="/search?q=logo-design" className="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-700 hover:bg-gray-200 transition-colors duration-200">
-                logo design
+              <Link to="/search?q=embroidery" className="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-700 hover:bg-gray-200 transition-colors duration-200">
+                embroidery
               </Link>
-              <Link to="/search?q=dashboard" className="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-700 hover:bg-gray-200 transition-colors duration-200">
-                dashboard
+              <Link to="/search?q=couture" className="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-700 hover:bg-gray-200 transition-colors duration-200">
+                couture
               </Link>
-              <Link to="/search?q=icons" className="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-700 hover:bg-gray-200 transition-colors duration-200">
-                icons
+              <Link to="/search?q=surface-design" className="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-700 hover:bg-gray-200 transition-colors duration-200">
+                surface design
               </Link>
             </div>
           </div>
