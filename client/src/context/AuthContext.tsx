@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import axios from "axios";
+import { notifyAuthChange } from "@/lib/cookieUtils";
 
 type User = {
   _id: string;
@@ -9,8 +10,8 @@ type User = {
   role: string;
   avatar?: string;
   location?: string;
-  followers?: any[];
-  following?: any[];
+  followers?: string[];
+  following?: string[];
   // add other user fields as needed
 } | null;
 
@@ -58,6 +59,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         { withCredentials: true }
       );
       await fetchUser();
+      // Notify other components about auth change
+      notifyAuthChange();
     } catch (error) {
       setUser(null); // Ensure user is cleared on login failure
       throw error; // Re-throw the error so the calling component can handle it
@@ -75,6 +78,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         { withCredentials: true }
       );
       setUser(null);
+      // Notify other components about auth change
+      notifyAuthChange();
     } finally {
       setLoading(false);
     }

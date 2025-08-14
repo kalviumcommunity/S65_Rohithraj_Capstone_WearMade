@@ -1,6 +1,7 @@
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const { getCookieOptions, getClearCookieOptions } = require('../config/cookieConfig');
 require('dotenv').config();
 
 const generateToken = (id) => {
@@ -50,15 +51,8 @@ const signup = async (req, res) => {
 
     if (user) {
       const token = generateToken(user._id);
-      const isProduction = process.env.NODE_ENV === 'production';
 
-      res.cookie('token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
-        path: '/',
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      });
+      res.cookie('token', token, getCookieOptions());
 
       res.status(201).json({
         message: 'Account created successfully',
@@ -97,15 +91,8 @@ const login = async (req, res) => {
     }
 
     const token = generateToken(user._id);
-    const isProduction = process.env.NODE_ENV === 'production';
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
-      path: '/',
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie('token', token, getCookieOptions());
 
     res.status(200).json({
       message: 'Login successful',
@@ -160,12 +147,8 @@ const getMe = async (req, res) => {
 };
 
 const logout = (req, res) => {
-  res.clearCookie('token', {
-    httpOnly: true,
-    secure: true, // Add this for production
-    sameSite: 'None',
-    path: '/' // Ensure cookie is available across all paths
-  });
+  // Clear cookie with the same settings used when setting it
+  res.clearCookie('token', getClearCookieOptions());
   res.status(200).json({ message: 'Logged out successfully' });
 };
 
