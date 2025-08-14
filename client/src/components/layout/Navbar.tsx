@@ -6,7 +6,7 @@ import { Search } from 'lucide-react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Message01Icon } from '@hugeicons/core-free-icons';
 import logo from '@/assets/logo.svg';
-import axios from 'axios';
+import { getAuthStatus } from '@/lib/cookieUtils';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,6 +14,7 @@ const Navbar = () => {
   const [authError, setAuthError] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isAuthenticatedByCookie, setIsAuthenticatedByCookie] = useState(false);
   const navigate = useNavigate();
   const location = useLocation(); // Get current location
   
@@ -23,6 +24,25 @@ const Navbar = () => {
   // Safely access auth context with error handling
   const auth = useAuth();
   const { user, loading } = auth || { user: null, loading: true };
+
+  // Check cookie authentication status
+  useEffect(() => {
+    const checkCookieAuth = () => {
+      const authStatus = getAuthStatus();
+      setIsAuthenticatedByCookie(authStatus.isAuthenticated);
+    };
+
+    // Check immediately
+    checkCookieAuth();
+
+    // Set up interval to check cookie status every 5 seconds
+    const interval = setInterval(checkCookieAuth, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Determine if user is authenticated (prefer AuthContext user, fallback to cookie)
+  const isAuthenticated = user ? true : isAuthenticatedByCookie;
 
   // Set up intersection observer to detect when hero search is out of view
   useEffect(() => {
@@ -64,6 +84,8 @@ const Navbar = () => {
     try {
       if (auth && auth.logout) {
         await auth.logout();
+        // Clear the cookie authentication state immediately
+        setIsAuthenticatedByCookie(false);
         navigate('/login');
       }
     } catch (error) {
@@ -170,7 +192,7 @@ const Navbar = () => {
             
               {loading ? (
                 <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse"></div>
-              ) : user ? (
+              ) : isAuthenticated ? (
                 <>
                   <Link to="/messages" className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
                     <HugeiconsIcon 
@@ -192,7 +214,7 @@ const Navbar = () => {
                     >
                       <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center">
                         <span className="text-white text-sm font-medium">
-                          {user.name ? user.name.charAt(0).toUpperCase() : '?'}
+                          {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
                         </span>
                       </div>
                     </button>
@@ -200,8 +222,8 @@ const Navbar = () => {
                     <div className="hidden md:block absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0">
                       <div className="py-2">
                         <div className="px-4 py-2 border-b border-gray-100">
-                          <p className="text-sm font-medium text-black">{user.name}</p>
-                          <p className="text-xs text-gray-500">{user.email}</p>
+                          <p className="text-sm font-medium text-black">{user?.name || 'User'}</p>
+                          <p className="text-xs text-gray-500">{user?.email || 'user@example.com'}</p>
                         </div>
                         <Link to="/profile" className="block px-4 py-2 text-sm text-black hover:text-gray-500 hover:bg-gray-100 transition-colors duration-200">Profile</Link>
                         <hr className="my-1" />
@@ -255,14 +277,17 @@ const Navbar = () => {
               <div className="space-y-4">
                 <Link to="/explore" className="block text-black hover:text-gray-500 font-medium transition-colors duration-200">Explore</Link>
                 <Link to="/tailors" className="block text-black hover:text-gray-500 font-medium transition-colors duration-200">Hire a Designer</Link>
-                <Link to="/profile" className="block text-black hover:text-gray-500 font-medium transition-colors duration-200">Profile</Link>
-                <button
-                  onClick={handleLogout}
-                  className="block w-full text-left text-red-600 hover:bg-red-50 font-medium px-4 py-2 rounded transition-colors duration-200"
-                >
-                  Sign out
-                </button>
-                {!user && (
+                {isAuthenticated ? (
+                  <>
+                    <Link to="/profile" className="block text-black hover:text-gray-500 font-medium transition-colors duration-200">Profile</Link>
+                    <button
+                      onClick={handleLogout}
+                      className="block text-left text-red-600 hover:text-red-700 hover:bg-red-50 font-medium transition-colors duration-200 px-0 py-2"
+                    >
+                      Sign out
+                    </button>
+                  </>
+                ) : (
                   <div className="pt-4 border-t border-gray-200">
                     <Link to="/signup" className="block text-black hover:text-gray-500 font-medium transition-colors duration-200 mb-2">Sign up</Link>
                     <Link to="/login" className="block text-black font-medium hover:text-gray-500">Log in</Link>

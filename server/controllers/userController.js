@@ -160,11 +160,12 @@ const getMe = async (req, res) => {
 };
 
 const logout = (req, res) => {
+  // Clear cookie with the same settings used when setting it
   res.clearCookie('token', {
     httpOnly: true,
-    secure: true, // Add this for production
-    sameSite: 'None',
-    path: '/' // Ensure cookie is available across all paths
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+    path: '/'
   });
   res.status(200).json({ message: 'Logged out successfully' });
 };
