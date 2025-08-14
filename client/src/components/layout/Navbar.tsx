@@ -6,7 +6,7 @@ import { Search } from 'lucide-react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Message01Icon } from '@hugeicons/core-free-icons';
 import logo from '@/assets/logo.svg';
-import { getAuthStatus } from '@/lib/cookieUtils';
+import { getAuthStatus, subscribeToAuthChanges, setupCookieMonitoring, notifyAuthChange } from '@/lib/cookieUtils';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -25,21 +25,31 @@ const Navbar = () => {
   const auth = useAuth();
   const { user, loading } = auth || { user: null, loading: true };
 
-  // Check cookie authentication status
+  // Check cookie authentication status with event-driven updates
   useEffect(() => {
-    const checkCookieAuth = () => {
-      const authStatus = getAuthStatus();
-      setIsAuthenticatedByCookie(authStatus.isAuthenticated);
+    // Initial check
+    const initialAuthStatus = getAuthStatus();
+    setIsAuthenticatedByCookie(initialAuthStatus.isAuthenticated);
+
+    // Setup event-driven monitoring
+    const cleanupMonitoring = setupCookieMonitoring();
+    
+    // Subscribe to auth changes
+    const unsubscribe = subscribeToAuthChanges((isAuthenticated) => {
+      setIsAuthenticatedByCookie(isAuthenticated);
+    });
+
+    return () => {
+      cleanupMonitoring();
+      unsubscribe();
     };
-
-    // Check immediately
-    checkCookieAuth();
-
-    // Set up interval to check cookie status every 5 seconds
-    const interval = setInterval(checkCookieAuth, 5000);
-
-    return () => clearInterval(interval);
   }, []);
+
+  // Also check on route changes for immediate updates
+  useEffect(() => {
+    const authStatus = getAuthStatus();
+    setIsAuthenticatedByCookie(authStatus.isAuthenticated);
+  }, [location.pathname]);
 
   // Determine if user is authenticated (prefer AuthContext user, fallback to cookie)
   const isAuthenticated = user ? true : isAuthenticatedByCookie;
@@ -86,6 +96,8 @@ const Navbar = () => {
         await auth.logout();
         // Clear the cookie authentication state immediately
         setIsAuthenticatedByCookie(false);
+        // Notify other tabs/components about the auth change
+        notifyAuthChange();
         navigate('/login');
       }
     } catch (error) {

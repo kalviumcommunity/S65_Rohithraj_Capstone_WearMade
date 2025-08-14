@@ -60,3 +60,88 @@ export const getAuthStatus = () => {
   
   return { isAuthenticated: true, reason: 'valid_token' };
 };
+
+// Event-driven cookie change detection
+type CookieChangeCallback = (isAuthenticated: boolean) => void;
+let cookieChangeCallbacks: CookieChangeCallback[] = [];
+let lastAuthState: boolean | null = null;
+
+/**
+ * Subscribe to authentication state changes
+ * @param callback - Function to call when auth state changes
+ * @returns Unsubscribe function
+ */
+export const subscribeToAuthChanges = (callback: CookieChangeCallback) => {
+  cookieChangeCallbacks.push(callback);
+  
+  // Return unsubscribe function
+  return () => {
+    cookieChangeCallbacks = cookieChangeCallbacks.filter(cb => cb !== callback);
+  };
+};
+
+/**
+ * Check for auth changes and notify subscribers
+ */
+const checkAuthChanges = () => {
+  const currentAuthState = isAuthenticatedViaCookie();
+  
+  if (lastAuthState !== currentAuthState) {
+    lastAuthState = currentAuthState;
+    cookieChangeCallbacks.forEach(callback => callback(currentAuthState));
+  }
+};
+
+/**
+ * Setup event-driven cookie monitoring
+ */
+export const setupCookieMonitoring = () => {
+  if (typeof window === 'undefined') return () => {};
+  
+  // Initial check
+  lastAuthState = isAuthenticatedViaCookie();
+  
+  // Check on window focus (user might have logged out in another tab)
+  const handleFocus = () => checkAuthChanges();
+  
+  // Check on page visibility change
+  const handleVisibilityChange = () => {
+    if (!document.hidden) {
+      checkAuthChanges();
+    }
+  };
+  
+  // Setup storage event listener for cross-tab communication
+  const handleStorageChange = (e: StorageEvent) => {
+    if (e.key === 'auth_change') {
+      checkAuthChanges();
+    }
+  };
+  
+  // Add event listeners
+  window.addEventListener('focus', handleFocus);
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  window.addEventListener('storage', handleStorageChange);
+  
+  // Return cleanup function
+  return () => {
+    window.removeEventListener('focus', handleFocus);
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+    window.removeEventListener('storage', handleStorageChange);
+    cookieChangeCallbacks = [];
+  };
+};
+
+/**
+ * Trigger auth change notification across tabs
+ */
+export const notifyAuthChange = () => {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    // Use localStorage to communicate across tabs
+    localStorage.setItem('auth_change', Date.now().toString());
+    localStorage.removeItem('auth_change');
+  }
+  
+  // Check immediately in current tab
+  checkAuthChanges();
+};
